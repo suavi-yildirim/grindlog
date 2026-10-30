@@ -6,6 +6,5 @@
   "private": true,
   "scripts": {
     "test": "node --test test/core.test.js"
-  },
-  "license": "MIT"
+  }
 }

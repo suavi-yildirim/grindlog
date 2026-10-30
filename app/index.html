@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Grindlog</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Grindlog</h1>
+      <p class="stats">
+        <span>Level <strong id="level">1</strong></span>
+        <span><strong id="xp">0</strong> XP</span>
+      </p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>This week</h2>
+        <div class="bar" role="progressbar" aria-label="Weekly goal progress">
+          <div id="goal-fill" class="bar-fill"></div>
+        </div>
+        <p id="goal-text" class="muted"></p>
+        <label>
+          Weekly goal
+          <input id="goal-input" type="number" min="1" max="50" />
+        </label>
+      </section>
+
+      <section class="card">
+        <h2>Add application</h2>
+        <form id="add-form">
+          <input name="company" placeholder="Company" required />
+          <input name="role" placeholder="Role" required />
+          <input name="link" type="url" placeholder="Link (optional)" />
+          <textarea name="notes" rows="2" placeholder="Notes (optional)"></textarea>
+          <button type="submit">Add</button>
+        </form>
+        <p id="form-error" class="error" role="alert"></p>
+      </section>
+
+      <section class="card">
+        <h2>Applications</h2>
+        <ul id="app-list" class="apps"></ul>
+        <p id="empty" class="muted">Nothing logged yet. Add your first application above.</p>
+      </section>
+
+      <section class="card">
+        <h2>Your data</h2>
+        <p class="muted">
+          Your data is saved in this browser only. Export it to keep a backup. Keep exports out of
+          any public repo.
+        </p>
+        <div class="row">
+          <button id="export-btn" type="button">Export JSON</button>
+          <label class="button-like">
+            Import JSON
+            <input id="import-input" type="file" accept="application/json" hidden />
+          </label>
+        </div>
+        <p id="data-error" class="error" role="alert"></p>
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Grindlog: a job search tracker that rewards effort</title>
+    <meta name="description" content="Grindlog is a free, open source job application tracker. It gives XP for effort, not outcomes, and never punishes a missed day." />
+    <style>
+      :root {
+        --bg: #f7f5f0;
+        --card: #ffffff;
+        --text: #1d1d1b;
+        --muted: #6b6a64;
+        --accent: #2f7d5b;
+        --border: #e2ded4;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #171816;
+          --card: #222420;
+          --text: #efeee8;
+          --muted: #a3a195;
+          --accent: #6fcf9f;
+          --border: #3a3c36;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #171816;
+        --card: #222420;
+        --text: #efeee8;
+        --muted: #a3a195;
+        --accent: #6fcf9f;
+        --border: #3a3c36;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        line-height: 1.6;
+      }
+      main {
+        max-width: 640px;
+        margin: 48px auto;
+      }
+      h1 {
+        font-size: 2.2rem;
+        margin-bottom: 8px;
+      }
+      .lead {
+        color: var(--muted);
+        font-size: 1.15rem;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin: 24px 0;
+      }
+      .cta {
+        display: inline-block;
+        background: var(--accent);
+        color: #fff;
+        padding: 12px 18px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      ul {
+        padding-left: 20px;
+      }
+      footer {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-top: 40px;
+      }
+      a {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Grindlog</h1>
+      <p class="lead">
+        A job application tracker that makes applying feel like progress. You earn XP for the work
+        you put in, not for the answers you get back.
+      </p>
+
+      <a class="cta" href="app/">Open the tracker</a>
+
+      <div class="card">
+        <h2>How it works</h2>
+        <ul>
+          <li>Log each application, then log the steps you take: applied, tailored, followed up, interview.</li>
+          <li>Each step earns XP. Rejections earn nothing and cost nothing.</li>
+          <li>A weekly goal bar tracks your effort, and levels rise as your XP grows.</li>
+          <li>There are no streaks, so a missed day never takes anything away.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Private by default</h2>
+        <p>
+          The tracker runs in your browser and keeps your data there. Nothing is uploaded and no
+          account is needed. You can export a JSON backup whenever you like.
+        </p>
+      </div>
+
+      <footer>
+        The code is public. <a href="https://github.com/suavi-yildirim/grindlog">View the code on GitHub</a>.
+      </footer>
+    </main>
+  </body>
+</html>
