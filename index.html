@@ -14,16 +14,24 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <canvas id="bg" aria-hidden="true"></canvas>
+
+    <div id="boot" class="boot" aria-hidden="true">
+      <pre id="boot-log" class="boot-log"></pre>
+      <p class="boot-skip">click or press a key to skip</p>
+    </div>
+
     <div class="shell">
       <header class="topbar reveal" style="--i: 0">
         <div class="brand">
           <span class="brand-mark" aria-hidden="true"></span>
           <div>
-            <p class="eyebrow">Job search dashboard</p>
+            <p class="eyebrow"><span class="led" aria-hidden="true"></span>Job search dashboard</p>
             <h1>Grindlog</h1>
           </div>
         </div>
         <div class="top-actions">
+          <button id="sound-btn" type="button" class="ghost" aria-pressed="true">Sound on</button>
           <button id="sync-btn" type="button" class="ghost" hidden>Load from repo</button>
           <button id="export-btn" type="button" class="ghost">Export</button>
           <label class="button ghost">
@@ -124,7 +132,24 @@
         </section>
       </div>
 
-      <section class="card reveal" style="--i: 6" aria-labelledby="rules-title">
+      <section class="card lab reveal" style="--i: 6" aria-labelledby="lab-title">
+        <span class="fig">FIG. 2</span>
+        <h2 id="lab-title">Effort lab</h2>
+        <div class="lab-grid">
+          <div>
+            <h3 class="detail-section">Steps by type</h3>
+            <div id="xp-bars" class="bars"></div>
+          </div>
+          <div>
+            <h3 class="detail-section">Ghost-o-meter</h3>
+            <div class="ghost-meter" aria-hidden="true"><div id="ghost-fill" class="ghost-fill"></div></div>
+            <p id="ghost-text" class="ghost-text" role="status"></p>
+            <p id="ghost-sub" class="muted"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card reveal" style="--i: 7" aria-labelledby="rules-title">
         <h2 id="rules-title">How XP works</h2>
         <ul class="xp-grid">
           <li><span>Applied</span><b>10</b></li>
@@ -153,6 +178,10 @@
         The code is public. <a href="https://github.com/suavi-yildirim/grindlog">View it on GitHub</a>.
       </footer>
     </div>
+
+    <dialog id="detail" class="detail" aria-labelledby="detail-title">
+      <div id="detail-body"></div>
+    </dialog>
 
     <div id="toasts" class="toasts" aria-live="polite"></div>
     <script type="module" src="app.js"></script>

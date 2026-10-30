@@ -7,12 +7,19 @@ import {
   emptyState,
   levelFor,
   logEvent,
+  removeApplication,
+  removeEvent,
   toDateKey,
   totalXp,
+  updateApplication,
   weeklyProgress,
 } from "./src/core.js";
+import { startBackground } from "./src/background.js";
+import { runBoot } from "./src/boot.js";
+import { play, soundOn, toggleSound } from "./src/sound.js";
 
 const STORAGE_KEY = "grindlog.v1";
+const WAITING_STEPS = ["applied", "tailored", "followup"];
 const RING_LENGTH = 2 * Math.PI * 50;
 
 const els = {
@@ -37,6 +44,15 @@ const els = {
   dataError: document.querySelector("#data-error"),
   syncBtn: document.querySelector("#sync-btn"),
   syncStatus: document.querySelector("#sync-status"),
+  detail: document.querySelector("#detail"),
+  detailBody: document.querySelector("#detail-body"),
+  soundBtn: document.querySelector("#sound-btn"),
+  xpBars: document.querySelector("#xp-bars"),
+  ghostFill: document.querySelector("#ghost-fill"),
+  ghostText: document.querySelector("#ghost-text"),
+  ghostSub: document.querySelector("#ghost-sub"),
+  bg: document.querySelector("#bg"),
+  boot: document.querySelector("#boot"),
   toasts: document.querySelector("#toasts"),
 };
 
@@ -239,6 +255,49 @@ function renderProgress() {
   els.statInterviews.textContent = String(interviews);
   els.statWeek.textContent = String(progress.count);
   els.appsCount.textContent = String(state.applications.length);
+  renderLab();
+}
+
+// The lab is deliberately playful: a bar chart of steps and a ghost-o-meter for applications that never got past the first steps.
+function renderLab() {
+  const counts = Object.fromEntries(EVENT_TYPES.map((type) => [type, 0]));
+  for (const event of allEvents(state)) {
+    counts[event.type] += 1;
+  }
+  const top = Math.max(1, ...Object.values(counts));
+  els.xpBars.replaceChildren(
+    ...EVENT_TYPES.map((type) => {
+      const fill = el("span", { className: "bar-fill" });
+      requestAnimationFrame(() => {
+        fill.style.width = `${(counts[type] / top) * 100}%`;
+      });
+      return el(
+        "div",
+        { className: "bar-row" },
+        el("span", { className: "bar-label", textContent: type }),
+        el("span", { className: "bar-track" }, fill),
+        el("span", { className: "bar-value", textContent: `${counts[type]} × ${XP_RULES[type]} XP` }),
+      );
+    }),
+  );
+
+  const total = state.applications.length;
+  const waiting = state.applications.filter((app) => app.events.length && WAITING_STEPS.includes(app.events.at(-1).type)).length;
+  const ratio = total ? waiting / total : 0;
+  els.ghostFill.style.width = `${Math.round(ratio * 100)}%`;
+  els.ghostText.textContent = !total
+    ? "No applications yet, so nothing is haunting you."
+    : ratio === 0
+      ? "No ghosts. Suspicious, but nice."
+      : ratio < 0.5
+        ? `${waiting} of ${total} are staring at the ceiling.`
+        : `${waiting} of ${total} are waiting on the void. The ghosts are organizing.`;
+  els.ghostSub.textContent = "A ghost is an application whose latest step is still applied, tailored or followed up.";
+}
+
+function paintSoundButton() {
+  els.soundBtn.textContent = soundOn() ? "Sound on" : "Sound off";
+  els.soundBtn.setAttribute("aria-pressed", String(soundOn()));
 }
 
 // One segment per goal step. The segments are only rebuilt when the goal changes, so earned ones animate in place.
@@ -264,10 +323,157 @@ function celebrateIfNewlyReached(reached) {
     goalWasReached = reached;
   } else if (reached && !goalWasReached) {
     els.goalMeter.classList.add("celebrate");
+    play("goal");
     setTimeout(() => els.goalMeter.classList.remove("celebrate"), 2600);
   }
   goalWasReached = reached;
   els.goalBanner.hidden = !reached;
+}
+
+// Small DOM helper: sets properties on a new element and appends its children.
+function el(tag, props = {}, ...children) {
+  const node = document.createElement(tag);
+  Object.assign(node, props);
+  node.append(...children);
+  return node;
+}
+
+// Any change from the detail view goes through here, so the list, the progress and the open detail stay in step.
+function commit() {
+  save();
+  render();
+  renderDetail();
+}
+
+let openId = null;
+
+function openDetail(id) {
+  openId = id;
+  renderDetail();
+  if (!els.detail.open) {
+    els.detail.showModal();
+  }
+}
+
+function renderDetail() {
+  const app = state.applications.find((item) => item.id === openId);
+  if (!app) {
+    els.detail.close();
+    return;
+  }
+  els.detailBody.replaceChildren(...buildDetail(app));
+}
+
+// Only web links are made clickable, so a pasted or imported "javascript:" link can't run anything.
+function safeLink(link) {
+  return /^https?:\/\//.test(link) ? link : null;
+}
+
+function buildDetail(app) {
+  const nodes = [el("h2", { id: "detail-title", textContent: `${app.company}: ${app.role}` })];
+
+  if (app.link) {
+    const href = safeLink(app.link);
+    nodes.push(
+      el(
+        "p",
+        { className: "detail-link" },
+        href
+          ? el("a", { href, target: "_blank", rel: "noopener noreferrer", textContent: app.link })
+          : el("span", { textContent: app.link }),
+      ),
+    );
+  }
+  if (app.notes) {
+    nodes.push(el("p", { className: "app-notes", textContent: app.notes }));
+  }
+  nodes.push(el("p", { className: "app-meta", textContent: `Added ${app.createdOn}` }));
+
+  // Steps, each with its date, XP and a way to remove a mistake.
+  nodes.push(el("h3", { className: "detail-section", textContent: "Steps" }));
+  if (!app.events.length) {
+    nodes.push(el("p", { className: "muted", textContent: "No steps logged yet." }));
+  } else {
+    const timeline = el("ol", { className: "timeline" });
+    app.events.forEach((event, index) => {
+      const remove = el("button", { type: "button", className: "ghost small", textContent: "Remove" });
+      remove.addEventListener("click", () => {
+        state = removeEvent(state, app.id, index);
+        play("remove");
+        commit();
+      });
+      timeline.append(
+        el(
+          "li",
+          {},
+          el("span", { className: "step-name", textContent: event.type }),
+          el("span", { className: "app-meta", textContent: `${event.date} · ${XP_RULES[event.type]} XP` }),
+          remove,
+        ),
+      );
+    });
+    nodes.push(timeline);
+  }
+
+  // Edit the details. Steps keep their dates and XP.
+  nodes.push(el("h3", { className: "detail-section", textContent: "Edit details" }));
+  const form = el("form", { className: "edit-form" });
+  const formError = el("p", { className: "error", role: "alert" });
+  const fields = [
+    ["company", "Company", app.company, "input"],
+    ["role", "Role", app.role, "input"],
+    ["link", "Link", app.link, "input"],
+    ["notes", "Notes", app.notes, "textarea"],
+  ];
+  for (const [name, label, value, tag] of fields) {
+    form.append(el("label", {}, label, el(tag, { name, value, rows: tag === "textarea" ? 3 : undefined })));
+  }
+  form.append(el("div", { className: "form-foot" }, formError, el("button", { type: "submit", textContent: "Save changes" })));
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    try {
+      state = updateApplication(state, app.id, Object.fromEntries(new FormData(form)));
+    } catch (error) {
+      formError.textContent = error.message;
+      return;
+    }
+    commit();
+    toast("Changes saved");
+  });
+  nodes.push(form);
+
+  // Delete asks for confirmation on the page itself, because browser confirm dialogs are blocked in some views.
+  const deleteBtn = el("button", { type: "button", className: "ghost danger", textContent: "Delete application" });
+  const confirmRow = el(
+    "div",
+    { className: "confirm", hidden: true },
+    el("p", { className: "error", textContent: "Delete this application and all its steps? This cannot be undone." }),
+    el("button", { type: "button", className: "danger", textContent: "Yes, delete" }),
+    el("button", { type: "button", className: "ghost", textContent: "Keep it" }),
+  );
+  deleteBtn.addEventListener("click", () => {
+    deleteBtn.hidden = true;
+    confirmRow.hidden = false;
+  });
+  const [yes, keep] = confirmRow.querySelectorAll("button");
+  yes.addEventListener("click", () => {
+    state = removeApplication(state, app.id);
+    els.detail.close();
+    commit();
+    play("remove");
+    toast(`Deleted ${app.company}`);
+  });
+  keep.addEventListener("click", () => {
+    confirmRow.hidden = true;
+    deleteBtn.hidden = false;
+  });
+  nodes.push(el("div", { className: "detail-foot" }, deleteBtn, confirmRow));
+
+  const close = el("button", { type: "button", className: "ghost", textContent: "Close" });
+  close.addEventListener("click", () => els.detail.close());
+  nodes.push(el("div", { className: "detail-close" }, close));
+
+  return nodes;
 }
 
 function toast(text) {
@@ -289,6 +495,11 @@ function renderApplications() {
     title.className = "app-title";
     title.textContent = `${app.company}: ${app.role}`;
 
+    const details = el("button", { type: "button", className: "ghost small", textContent: "Details" });
+    details.addEventListener("click", () => openDetail(app.id));
+
+    const head = el("div", { className: "app-head" }, title, details);
+
     const meta = document.createElement("div");
     meta.className = "app-meta";
     const lastEvent = app.events.at(-1);
@@ -305,12 +516,13 @@ function renderApplications() {
         state = logEvent(state, app.id, type, toDateKey(new Date()));
         save();
         render();
+        play(XP_RULES[type] > 0 ? "tick" : "error");
         toast(XP_RULES[type] > 0 ? `+${XP_RULES[type]} XP · ${app.company}` : `Logged ${type}. No XP lost.`);
       });
       steps.append(button);
     }
 
-    item.append(title, meta, steps);
+    item.append(head, meta, steps);
     if (app.notes) {
       const notes = document.createElement("p");
       notes.className = "app-notes";
@@ -340,6 +552,7 @@ els.addForm.addEventListener("submit", (event) => {
   els.addForm.reset();
   save();
   render();
+  play("add");
   toast(`Added ${state.applications.at(-1).company}`);
 });
 
@@ -380,6 +593,18 @@ els.importInput.addEventListener("change", async () => {
 });
 
 els.syncBtn.addEventListener("click", importFromRepo);
+els.detail.addEventListener("close", () => {
+  openId = null;
+});
+
+els.soundBtn.addEventListener("click", () => {
+  toggleSound();
+  paintSoundButton();
+});
+paintSoundButton();
+
+startBackground(els.bg);
+runBoot(els.boot);
 
 render();
 connectSync();

@@ -100,3 +100,35 @@ export function applicationsByStatus(state) {
   }
   return counts;
 }
+
+// Changes an application's details. Only the given fields change, and the id and steps stay as they are.
+export function updateApplication(state, applicationId, changes) {
+  const applications = state.applications.map((app) => {
+    if (app.id !== applicationId) {
+      return app;
+    }
+    const next = { ...app };
+    for (const field of ["company", "role", "link", "notes"]) {
+      if (field in changes) {
+        next[field] = String(changes[field] ?? "").trim();
+      }
+    }
+    if (!next.company || !next.role) {
+      throw new Error("An application needs a company and a role.");
+    }
+    return next;
+  });
+  return { ...state, applications };
+}
+
+export function removeApplication(state, applicationId) {
+  return { ...state, applications: state.applications.filter((app) => app.id !== applicationId) };
+}
+
+// Removes one logged step by its position, for example to fix a step logged by mistake.
+export function removeEvent(state, applicationId, index) {
+  const applications = state.applications.map((app) =>
+    app.id === applicationId ? { ...app, events: app.events.filter((_, i) => i !== index) } : app,
+  );
+  return { ...state, applications };
+}
