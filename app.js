@@ -75,6 +75,10 @@ function save() {
 
 // Sync runs only when the local companion server (server.js) answers. On the public site there is no server, so it stays off.
 async function connectSync() {
+  // The public site is never on localhost, so it skips the probe and avoids a console 404 there.
+  if (!["localhost", "127.0.0.1"].includes(location.hostname)) {
+    return;
+  }
   try {
     const response = await fetch(API, { cache: "no-store" });
     if (!response.ok) {

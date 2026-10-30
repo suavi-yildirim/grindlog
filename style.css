@@ -639,6 +639,8 @@ footer {
 
 footer a {
   color: var(--accent);
+  display: inline-block;
+  padding: 8px 0;
 }
 
 /* Floating XP toasts */
