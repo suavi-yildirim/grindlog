@@ -35,12 +35,19 @@ const els = {
   exportBtn: document.querySelector("#export-btn"),
   importInput: document.querySelector("#import-input"),
   dataError: document.querySelector("#data-error"),
+  syncBtn: document.querySelector("#sync-btn"),
+  syncStatus: document.querySelector("#sync-status"),
   toasts: document.querySelector("#toasts"),
 };
+
+const API = "/api/data";
 
 let state = load();
 let shownXp = 0;
 let goalWasReached = null;
+let syncOn = false;
+let uploading = false;
+let queued = false;
 
 // Local storage can be blocked or full, so every access is guarded and the app still works without it.
 function load() {
@@ -61,6 +68,102 @@ function save() {
   } catch {
     els.dataError.textContent = "Could not save to this browser. Export a backup to keep your data.";
   }
+  if (syncOn) {
+    pushState();
+  }
+}
+
+// Sync runs only when the local companion server (server.js) answers. On the public site there is no server, so it stays off.
+async function connectSync() {
+  try {
+    const response = await fetch(API, { cache: "no-store" });
+    if (!response.ok) {
+      return;
+    }
+    syncOn = true;
+    els.syncBtn.hidden = false;
+    const remote = await response.json();
+    if (remote) {
+      applyRemote(remote);
+      showSync("Loaded from your data repo.");
+    } else if (state.applications.length) {
+      showSync("Uploading your saved data to your repo.");
+      pushState();
+    }
+  } catch {
+    // No server here, so the page keeps working from browser storage alone.
+  }
+}
+
+function applyRemote(remote) {
+  state = normalize(remote);
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // The repo copy is still the source of truth, so a failed cache write is fine.
+  }
+  render();
+}
+
+async function importFromRepo() {
+  try {
+    const response = await fetch(API, { cache: "no-store" });
+    const remote = await response.json();
+    if (!remote) {
+      showSync("Your repo has no data yet. Save something first.");
+      return;
+    }
+    applyRemote(remote);
+    showSync("Imported from your data repo.");
+  } catch (error) {
+    showSync(`Could not import from the repo: ${error.message}`, true);
+  }
+}
+
+// Uploads run one at a time. If the data changes during an upload, the latest version goes up next.
+async function pushState() {
+  if (uploading) {
+    queued = true;
+    return;
+  }
+  uploading = true;
+  try {
+    do {
+      queued = false;
+      await upload();
+    } while (queued);
+  } finally {
+    uploading = false;
+  }
+}
+
+async function upload() {
+  try {
+    const response = await fetch(API, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(state),
+    });
+    const result = await response.json();
+    if (!response.ok || !result.ok) {
+      throw new Error(result.error ?? "The save failed.");
+    }
+    if (result.pushed) {
+      showSync("Saved and pushed to your data repo.");
+    } else if (result.committed) {
+      showSync(`Saved on this computer. The push failed: ${result.error}`, true);
+    } else {
+      showSync(result.error ?? "Saved. Nothing new to commit.");
+    }
+  } catch (error) {
+    showSync(`Not saved to your repo: ${error.message}`, true);
+  }
+}
+
+function showSync(text, isError = false) {
+  els.syncStatus.hidden = false;
+  els.syncStatus.textContent = text;
+  els.syncStatus.className = isError ? "error" : "muted";
 }
 
 // Accepts an imported file only when its shape matches what the app writes.
@@ -272,4 +375,7 @@ els.importInput.addEventListener("change", async () => {
   }
 });
 
+els.syncBtn.addEventListener("click", importFromRepo);
+
 render();
+connectSync();

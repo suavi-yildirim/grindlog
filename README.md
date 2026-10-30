@@ -24,16 +24,21 @@ A job application tracker that makes applying feel like progress. You earn XP fo
 
 ## Run it locally
 
-No install is needed. Open `index.html` in a browser, or serve the folder:
+Open `index.html` in a browser for a quick look. The public site works the same way, but it saves only to the browser.
+
+To save your data to a private repo, use the local companion server. Clone your private data repo next to this one, then start the server:
 
 ```sh
-python3 -m http.server 8000
+git clone git@github.com:<you>/grindlog-data.git ../grindlog-data
+node server.js
 # then open http://localhost:8000/
 ```
 
+With the server running, every change is saved to `../grindlog-data` as `grindlog.json`, `applications.csv` and `events.csv`. Each save is committed and pushed. **Load from repo** imports the latest copy. Set `GRINDLOG_DATA_DIR` to use another folder, and `PORT` to change the port. The server listens on localhost only.
+
 ## Your data
 
-The tracker saves everything in your browser's local storage. Use **Export JSON** to back it up and **Import JSON** to restore it.
+Without the server, the tracker keeps everything in your browser's local storage. Use **Export** to back it up and **Import** to restore it. With the server running, your data also lives in your private repo.
 
 Your application data is personal. Keep exports out of this repository. The `.gitignore` already excludes `data/` and `*.local.json` as a safety net.
 

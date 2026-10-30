@@ -24,6 +24,7 @@
           </div>
         </div>
         <div class="top-actions">
+          <button id="sync-btn" type="button" class="ghost" hidden>Load from repo</button>
           <button id="export-btn" type="button" class="ghost">Export</button>
           <label class="button ghost">
             Import
@@ -32,6 +33,7 @@
         </div>
       </header>
       <p id="data-error" class="error" role="alert"></p>
+      <p id="sync-status" class="muted" role="status" hidden></p>
 
       <section class="hero" aria-label="Progress">
         <article class="card level-card reveal" style="--i: 1">
