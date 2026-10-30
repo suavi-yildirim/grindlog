@@ -5,113 +5,299 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="data:," />
     <title>Grindlog: a job search tracker that rewards effort</title>
-    <meta name="description" content="Grindlog is a free, open source job application tracker. It gives XP for effort, not outcomes, and never punishes a missed day." />
+    <meta name="description" content="Grindlog is a free job application tracker. You earn XP for the work you put in, not the answers you get back, and missed days cost nothing." />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap"
+    />
     <style>
       :root {
-        --bg: #f7f5f0;
-        --card: #ffffff;
-        --text: #1d1d1b;
-        --muted: #6b6a64;
-        --accent: #2f7d5b;
-        --border: #e2ded4;
+        --paper: #f5f2ea;
+        --card: #fffdf8;
+        --ink: #1d1f1b;
+        --ink-2: #545749;
+        --ink-3: #7c7e70;
+        --line: #e2ddcf;
+        --accent: #2c6b4f;
+        --accent-ink: #ffffff;
+        --accent-soft: #d9e8dd;
+        --display: "Fraunces", Georgia, "Times New Roman", serif;
+        --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+        color-scheme: light;
       }
       @media (prefers-color-scheme: dark) {
         :root:not([data-theme="light"]) {
-          --bg: #171816;
-          --card: #222420;
-          --text: #efeee8;
-          --muted: #a3a195;
-          --accent: #6fcf9f;
-          --border: #3a3c36;
+          --paper: #141612;
+          --card: #1c1f19;
+          --ink: #ebe8de;
+          --ink-2: #aeb0a2;
+          --ink-3: #80836f;
+          --line: #2d3129;
+          --accent: #7fc49f;
+          --accent-ink: #10231a;
+          --accent-soft: #223629;
+          color-scheme: dark;
         }
       }
       :root[data-theme="dark"] {
-        --bg: #171816;
-        --card: #222420;
-        --text: #efeee8;
-        --muted: #a3a195;
-        --accent: #6fcf9f;
-        --border: #3a3c36;
+        --paper: #141612;
+        --card: #1c1f19;
+        --ink: #ebe8de;
+        --ink-2: #aeb0a2;
+        --ink-3: #80836f;
+        --line: #2d3129;
+        --accent: #7fc49f;
+        --accent-ink: #10231a;
+        --accent-soft: #223629;
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
       }
       body {
         margin: 0;
-        padding: 16px;
-        background: var(--bg);
-        color: var(--text);
-        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--body);
+        font-size: 17px;
         line-height: 1.6;
+        padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
+        padding-block: 48px 64px;
+        -webkit-font-smoothing: antialiased;
       }
       main {
-        max-width: 640px;
-        margin: 48px auto;
+        max-width: 680px;
+        margin: 0 auto;
+        display: grid;
+        gap: 40px;
+        min-width: 0;
+      }
+      h1,
+      h2 {
+        font-family: var(--display);
+        font-weight: 600;
+        line-height: 1.12;
+        margin: 0;
+        text-wrap: balance;
       }
       h1 {
-        font-size: 2.2rem;
-        margin-bottom: 8px;
+        font-size: clamp(2.6rem, 9vw, 3.6rem);
+        font-variation-settings: "opsz" 144;
+        letter-spacing: -0.015em;
+      }
+      h2 {
+        font-size: 1.4rem;
+        font-variation-settings: "opsz" 48;
+        margin-bottom: 12px;
+      }
+      .eyebrow {
+        margin: 0 0 12px;
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-3);
       }
       .lead {
-        color: var(--muted);
-        font-size: 1.15rem;
+        font-size: 1.2rem;
+        color: var(--ink-2);
+        margin: 16px 0 0;
+        max-width: 34em;
       }
-      .card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin: 24px 0;
+      .hero-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 28px;
+      }
+      .hero-actions span {
+        color: var(--ink-3);
+        font-size: 0.9rem;
       }
       .cta {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
         background: var(--accent);
-        color: #fff;
-        padding: 12px 18px;
-        border-radius: 8px;
+        color: var(--accent-ink);
+        padding: 12px 20px;
+        border-radius: 9px;
         text-decoration: none;
         font-weight: 600;
       }
-      ul {
-        padding-left: 20px;
+      .cta:focus-visible,
+      a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
       }
+
+      /* A miniature of the tracker's weekly meter, one segment per effort step. */
+      .sample {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 20px;
+        margin-top: 32px;
+      }
+      .sample-label {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        color: var(--ink-2);
+        font-variant-numeric: tabular-nums;
+        margin-bottom: 10px;
+      }
+      .meter {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+        height: 22px;
+      }
+      .meter span {
+        border-radius: 4px;
+        background: var(--accent-soft);
+      }
+      .meter span.on {
+        background: var(--accent);
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 24px;
+      }
+      .card p {
+        margin: 0;
+        color: var(--ink-2);
+      }
+      .card p + p {
+        margin-top: 12px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 10px 0;
+        border-top: 1px solid var(--line);
+      }
+      th + th,
+      td + td {
+        padding-left: 16px;
+      }
+      td.num,
+      th.num {
+        padding-right: 16px;
+      }
+      th {
+        font-weight: 500;
+        color: var(--ink-3);
+        font-size: 0.8rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border-top: none;
+        padding-top: 0;
+      }
+      td.num,
+      th.num {
+        text-align: right;
+        font-family: var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      td.note {
+        color: var(--ink-2);
+      }
+
       footer {
-        color: var(--muted);
+        color: var(--ink-3);
         font-size: 0.9rem;
-        margin-top: 40px;
       }
-      a {
+      footer a {
         color: var(--accent);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
       }
     </style>
   </head>
   <body>
     <main>
-      <h1>Grindlog</h1>
-      <p class="lead">
-        A job application tracker that makes applying feel like progress. You earn XP for the work
-        you put in, not for the answers you get back.
-      </p>
-
-      <a class="cta" href="app/">Open the tracker</a>
-
-      <div class="card">
-        <h2>How it works</h2>
-        <ul>
-          <li>Log each application, then log the steps you take: applied, tailored, followed up, interview.</li>
-          <li>Each step earns XP. Rejections earn nothing and cost nothing.</li>
-          <li>A weekly goal bar tracks your effort, and levels rise as your XP grows.</li>
-          <li>There are no streaks, so a missed day never takes anything away.</li>
-        </ul>
-      </div>
-
-      <div class="card">
-        <h2>Private by default</h2>
-        <p>
-          The tracker runs in your browser and keeps your data there. Nothing is uploaded and no
-          account is needed. You can export a JSON backup whenever you like.
+      <header>
+        <p class="eyebrow">Job search log</p>
+        <h1>Grindlog</h1>
+        <p class="lead">
+          A job application tracker that makes applying feel like progress. You earn XP for the work
+          you put in, not for the answers you get back.
         </p>
-      </div>
+        <div class="hero-actions">
+          <a class="cta" href="app/">Open the tracker</a>
+          <span>Free, no account, runs in your browser.</span>
+        </div>
+
+        <div class="sample" aria-hidden="true">
+          <div class="sample-label"><span>This week</span><span>3 of 5 steps</span></div>
+          <div class="meter">
+            <span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span>
+          </div>
+        </div>
+      </header>
+
+      <section aria-labelledby="xp-title">
+        <h2 id="xp-title">What earns XP</h2>
+        <div class="card">
+          <table>
+            <thead>
+              <tr><th>Step</th><th class="num">XP</th><th>Why it counts</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Applied</td><td class="num">10</td><td class="note">You sent it. That is the hard part.</td></tr>
+              <tr><td>Tailored</td><td class="num">5</td><td class="note">You changed your materials for this role.</td></tr>
+              <tr><td>Followed up</td><td class="num">5</td><td class="note">You reached out again.</td></tr>
+              <tr><td>Interview</td><td class="num">25</td><td class="note">A real conversation happened.</td></tr>
+              <tr><td>Offer</td><td class="num">100</td><td class="note">Worth celebrating.</td></tr>
+              <tr><td>Rejected</td><td class="num">0</td><td class="note">Logged, not penalized. It still shows you kept going.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section aria-labelledby="rules-title">
+        <h2 id="rules-title">How it stays kind</h2>
+        <div class="card">
+          <p>
+            Levels rise every 100 XP. The weekly goal fills one segment per effort step, counted
+            from Monday.
+          </p>
+          <p>
+            There are no streaks, so a missed day takes nothing away. Quiet weeks are fine. The goal
+            starts over each week, and the log keeps every step you took.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="privacy-title">
+        <h2 id="privacy-title">Private by default</h2>
+        <div class="card">
+          <p>
+            The tracker runs in your browser and keeps your data there. Nothing is uploaded and no
+            account is needed. Export a JSON backup whenever you like.
+          </p>
+        </div>
+      </section>
 
       <footer>
-        The code is public. <a href="https://github.com/suavi-yildirim/grindlog">View the code on GitHub</a>.
+        The code is public. <a href="https://github.com/suavi-yildirim/grindlog">View it on GitHub</a>.
       </footer>
     </main>
   </body>

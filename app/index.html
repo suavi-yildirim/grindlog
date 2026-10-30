@@ -5,64 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="data:," />
     <title>Grindlog</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <header>
-      <h1>Grindlog</h1>
-      <p class="stats">
-        <span>Level <strong id="level">1</strong></span>
-        <span><strong id="xp">0</strong> XP</span>
-      </p>
-    </header>
-
-    <main>
-      <section class="card">
-        <h2>This week</h2>
-        <div class="bar" role="progressbar" aria-label="Weekly goal progress">
-          <div id="goal-fill" class="bar-fill"></div>
+    <div class="page">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">Job search log</p>
+          <h1>Grindlog</h1>
         </div>
+        <div class="rank" aria-label="Progress">
+          <span class="rank-level">Level <strong id="level">1</strong></span>
+          <span class="rank-xp"><strong id="xp">0</strong> XP</span>
+        </div>
+      </header>
+
+      <section class="card week" aria-labelledby="week-title">
+        <div class="card-head">
+          <h2 id="week-title">This week</h2>
+          <label class="goal-set">
+            Goal
+            <input id="goal-input" type="number" min="1" max="50" inputmode="numeric" />
+          </label>
+        </div>
+        <div id="goal-meter" class="meter" role="img" aria-label="Weekly goal progress"></div>
         <p id="goal-text" class="muted"></p>
-        <label>
-          Weekly goal
-          <input id="goal-input" type="number" min="1" max="50" />
-        </label>
       </section>
 
-      <section class="card">
-        <h2>Add application</h2>
-        <form id="add-form">
-          <input name="company" placeholder="Company" required />
-          <input name="role" placeholder="Role" required />
-          <input name="link" type="url" placeholder="Link (optional)" />
-          <textarea name="notes" rows="2" placeholder="Notes (optional)"></textarea>
-          <button type="submit">Add</button>
+      <section class="card" aria-labelledby="add-title">
+        <h2 id="add-title">Log an application</h2>
+        <form id="add-form" class="add-form">
+          <label>
+            Company
+            <input name="company" autocomplete="organization" required />
+          </label>
+          <label>
+            Role
+            <input name="role" autocomplete="off" required />
+          </label>
+          <label class="span-2">
+            Link <span class="optional">optional</span>
+            <input name="link" type="url" inputmode="url" placeholder="https://" />
+          </label>
+          <label class="span-2">
+            Notes <span class="optional">optional</span>
+            <textarea name="notes" rows="2"></textarea>
+          </label>
+          <div class="form-foot span-2">
+            <p id="form-error" class="error" role="alert"></p>
+            <button type="submit">Add application</button>
+          </div>
         </form>
-        <p id="form-error" class="error" role="alert"></p>
       </section>
 
-      <section class="card">
-        <h2>Applications</h2>
+      <section class="card" aria-labelledby="apps-title">
+        <div class="card-head">
+          <h2 id="apps-title">Applications</h2>
+        </div>
         <ul id="app-list" class="apps"></ul>
-        <p id="empty" class="muted">Nothing logged yet. Add your first application above.</p>
+        <div id="empty" class="empty">
+          <p class="empty-title">Your log is empty.</p>
+          <p class="muted">Add your first application above. Every step you take after it earns XP.</p>
+        </div>
       </section>
 
-      <section class="card">
-        <h2>Your data</h2>
+      <section class="card quiet" aria-labelledby="data-title">
+        <h2 id="data-title">Your data</h2>
         <p class="muted">
-          Your data is saved in this browser only. Export it to keep a backup. Keep exports out of
-          any public repo.
+          Saved in this browser only. Export a backup now and then. Keep exports out of any public
+          repo.
         </p>
         <div class="row">
-          <button id="export-btn" type="button">Export JSON</button>
-          <label class="button-like">
+          <button id="export-btn" type="button" class="ghost">Export JSON</button>
+          <label class="button ghost">
             Import JSON
             <input id="import-input" type="file" accept="application/json" hidden />
           </label>
         </div>
         <p id="data-error" class="error" role="alert"></p>
       </section>
-    </main>
+    </div>
 
     <script type="module" src="app.js"></script>
   </body>

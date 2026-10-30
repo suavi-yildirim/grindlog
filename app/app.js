@@ -15,7 +15,7 @@ const STORAGE_KEY = "grindlog.v1";
 const els = {
   level: document.querySelector("#level"),
   xp: document.querySelector("#xp"),
-  goalFill: document.querySelector("#goal-fill"),
+  goalMeter: document.querySelector("#goal-meter"),
   goalText: document.querySelector("#goal-text"),
   goalInput: document.querySelector("#goal-input"),
   addForm: document.querySelector("#add-form"),
@@ -75,11 +75,28 @@ function render() {
 
   els.level.textContent = String(levelFor(xp));
   els.xp.textContent = String(xp);
-  els.goalFill.style.width = `${Math.round(progress.ratio * 100)}%`;
-  els.goalText.textContent = `${progress.count} of ${progress.goal} effort actions this week`;
+  renderMeter(progress);
+  els.goalText.textContent =
+    progress.count >= progress.goal
+      ? `Goal reached: ${progress.count} of ${progress.goal} effort steps this week`
+      : `${progress.count} of ${progress.goal} effort steps this week`;
   els.goalInput.value = String(state.weeklyGoal);
 
   renderApplications();
+}
+
+// One segment per goal step. Steps beyond the goal are not drawn, so the meter never overflows.
+function renderMeter({ count, goal }) {
+  els.goalMeter.style.setProperty("--goal", String(goal));
+  els.goalMeter.replaceChildren(
+    ...Array.from({ length: goal }, (_, index) => {
+      const segment = document.createElement("span");
+      if (index < count) {
+        segment.className = "on";
+      }
+      return segment;
+    }),
+  );
 }
 
 function renderApplications() {
@@ -89,17 +106,18 @@ function renderApplications() {
   for (const app of state.applications) {
     const item = document.createElement("li");
 
-    const title = document.createElement("strong");
+    const title = document.createElement("h3");
+    title.className = "app-title";
     title.textContent = `${app.company}: ${app.role}`;
 
     const meta = document.createElement("div");
-    meta.className = "meta";
+    meta.className = "app-meta";
     const lastEvent = app.events.at(-1);
     const appXp = app.events.reduce((sum, event) => sum + XP_RULES[event.type], 0);
-    meta.textContent = `Added ${app.createdOn} · ${appXp} XP · ${lastEvent ? `last: ${lastEvent.type}` : "no events yet"}`;
+    meta.textContent = `Added ${app.createdOn} · ${appXp} XP · ${lastEvent ? `last step: ${lastEvent.type}` : "no steps yet"}`;
 
     const events = document.createElement("div");
-    events.className = "events";
+    events.className = "steps";
     for (const type of EVENT_TYPES) {
       const button = document.createElement("button");
       button.type = "button";
@@ -114,8 +132,8 @@ function renderApplications() {
 
     item.append(title, meta, events);
     if (app.notes) {
-      const notes = document.createElement("div");
-      notes.className = "meta";
+      const notes = document.createElement("p");
+      notes.className = "app-notes";
       notes.textContent = app.notes;
       item.append(notes);
     }
