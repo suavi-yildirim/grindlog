@@ -1,0 +1,11 @@
+{
+  "name": "grindlog",
+  "version": "0.1.0",
+  "description": "A gamified job application tracker that rewards effort over outcomes.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test test/core.test.js"
+  },
+  "license": "MIT"
+}

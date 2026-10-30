@@ -1,0 +1,4 @@
+node_modules/
+# Personal application data never goes in this repo.
+data/
+*.local.json
