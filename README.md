@@ -3,7 +3,6 @@
 A job application tracker that makes applying feel like progress. You earn XP for effort, not outcomes, and missed days never cost you anything.
 
 - **Live site:** https://suavi-yildirim.github.io/grindlog/
-- **Tracker:** https://suavi-yildirim.github.io/grindlog/app/
 
 ## What it does
 
@@ -25,11 +24,11 @@ A job application tracker that makes applying feel like progress. You earn XP fo
 
 ## Run it locally
 
-No install is needed for the app. Open `app/index.html` in a browser, or serve the folder:
+No install is needed. Open `index.html` in a browser, or serve the folder:
 
 ```sh
 python3 -m http.server 8000
-# then open http://localhost:8000/app/
+# then open http://localhost:8000/
 ```
 
 ## Your data
@@ -46,7 +45,7 @@ Requires Node 18 or newer. There are no runtime dependencies.
 npm test
 ```
 
-The core logic lives in `src/core.js`, with no DOM or storage access, so it can be tested directly. The browser UI in `app/` only wires that logic to the page.
+The core logic lives in `src/core.js`, with no DOM or storage access, so it can be tested directly. The dashboard (`index.html`, `app.js`, `style.css`) only wires that logic to the page.
 
 ## Roadmap
 

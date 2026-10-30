@@ -4,301 +4,154 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="data:," />
-    <title>Grindlog: a job search tracker that rewards effort</title>
-    <meta name="description" content="Grindlog is a free job application tracker. You earn XP for the work you put in, not the answers you get back, and missed days cost nothing." />
+    <title>Grindlog: job search dashboard</title>
+    <meta name="description" content="Grindlog is a free job application dashboard. You earn XP for effort, not outcomes, and missed days cost nothing." />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap"
     />
-    <style>
-      :root {
-        --paper: #f5f2ea;
-        --card: #fffdf8;
-        --ink: #1d1f1b;
-        --ink-2: #545749;
-        --ink-3: #7c7e70;
-        --line: #e2ddcf;
-        --accent: #2c6b4f;
-        --accent-ink: #ffffff;
-        --accent-soft: #d9e8dd;
-        --display: "Fraunces", Georgia, "Times New Roman", serif;
-        --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-        --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
-        color-scheme: light;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) {
-          --paper: #141612;
-          --card: #1c1f19;
-          --ink: #ebe8de;
-          --ink-2: #aeb0a2;
-          --ink-3: #80836f;
-          --line: #2d3129;
-          --accent: #7fc49f;
-          --accent-ink: #10231a;
-          --accent-soft: #223629;
-          color-scheme: dark;
-        }
-      }
-      :root[data-theme="dark"] {
-        --paper: #141612;
-        --card: #1c1f19;
-        --ink: #ebe8de;
-        --ink-2: #aeb0a2;
-        --ink-3: #80836f;
-        --line: #2d3129;
-        --accent: #7fc49f;
-        --accent-ink: #10231a;
-        --accent-soft: #223629;
-        color-scheme: dark;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        background: var(--paper);
-        color: var(--ink);
-        font-family: var(--body);
-        font-size: 17px;
-        line-height: 1.6;
-        padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
-        padding-block: 48px 64px;
-        -webkit-font-smoothing: antialiased;
-      }
-      main {
-        max-width: 680px;
-        margin: 0 auto;
-        display: grid;
-        gap: 40px;
-        min-width: 0;
-      }
-      h1,
-      h2 {
-        font-family: var(--display);
-        font-weight: 600;
-        line-height: 1.12;
-        margin: 0;
-        text-wrap: balance;
-      }
-      h1 {
-        font-size: clamp(2.6rem, 9vw, 3.6rem);
-        font-variation-settings: "opsz" 144;
-        letter-spacing: -0.015em;
-      }
-      h2 {
-        font-size: 1.4rem;
-        font-variation-settings: "opsz" 48;
-        margin-bottom: 12px;
-      }
-      .eyebrow {
-        margin: 0 0 12px;
-        font-size: 0.8rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--ink-3);
-      }
-      .lead {
-        font-size: 1.2rem;
-        color: var(--ink-2);
-        margin: 16px 0 0;
-        max-width: 34em;
-      }
-      .hero-actions {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
-        margin-top: 28px;
-      }
-      .hero-actions span {
-        color: var(--ink-3);
-        font-size: 0.9rem;
-      }
-      .cta {
-        display: inline-flex;
-        align-items: center;
-        background: var(--accent);
-        color: var(--accent-ink);
-        padding: 12px 20px;
-        border-radius: 9px;
-        text-decoration: none;
-        font-weight: 600;
-      }
-      .cta:focus-visible,
-      a:focus-visible {
-        outline: 2px solid var(--accent);
-        outline-offset: 3px;
-      }
-
-      /* A miniature of the tracker's weekly meter, one segment per effort step. */
-      .sample {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 20px;
-        margin-top: 32px;
-      }
-      .sample-label {
-        display: flex;
-        justify-content: space-between;
-        font-family: var(--mono);
-        font-size: 0.85rem;
-        color: var(--ink-2);
-        font-variant-numeric: tabular-nums;
-        margin-bottom: 10px;
-      }
-      .meter {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 4px;
-        height: 22px;
-      }
-      .meter span {
-        border-radius: 4px;
-        background: var(--accent-soft);
-      }
-      .meter span.on {
-        background: var(--accent);
-      }
-
-      .card {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 24px;
-      }
-      .card p {
-        margin: 0;
-        color: var(--ink-2);
-      }
-      .card p + p {
-        margin-top: 12px;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.95rem;
-      }
-      th,
-      td {
-        text-align: left;
-        padding: 10px 0;
-        border-top: 1px solid var(--line);
-      }
-      th + th,
-      td + td {
-        padding-left: 16px;
-      }
-      td.num,
-      th.num {
-        padding-right: 16px;
-      }
-      th {
-        font-weight: 500;
-        color: var(--ink-3);
-        font-size: 0.8rem;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        border-top: none;
-        padding-top: 0;
-      }
-      td.num,
-      th.num {
-        text-align: right;
-        font-family: var(--mono);
-        font-variant-numeric: tabular-nums;
-      }
-      td.note {
-        color: var(--ink-2);
-      }
-
-      footer {
-        color: var(--ink-3);
-        font-size: 0.9rem;
-      }
-      footer a {
-        color: var(--accent);
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        * {
-          transition: none !important;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <main>
-      <header>
-        <p class="eyebrow">Job search log</p>
-        <h1>Grindlog</h1>
-        <p class="lead">
-          A job application tracker that makes applying feel like progress. You earn XP for the work
-          you put in, not for the answers you get back.
-        </p>
-        <div class="hero-actions">
-          <a class="cta" href="app/">Open the tracker</a>
-          <span>Free, no account, runs in your browser.</span>
-        </div>
-
-        <div class="sample" aria-hidden="true">
-          <div class="sample-label"><span>This week</span><span>3 of 5 steps</span></div>
-          <div class="meter">
-            <span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span>
+    <div class="shell">
+      <header class="topbar reveal" style="--i: 0">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <p class="eyebrow">Job search dashboard</p>
+            <h1>Grindlog</h1>
           </div>
         </div>
+        <div class="top-actions">
+          <button id="export-btn" type="button" class="ghost">Export</button>
+          <label class="button ghost">
+            Import
+            <input id="import-input" type="file" accept="application/json" hidden />
+          </label>
+        </div>
       </header>
+      <p id="data-error" class="error" role="alert"></p>
 
-      <section aria-labelledby="xp-title">
-        <h2 id="xp-title">What earns XP</h2>
-        <div class="card">
-          <table>
-            <thead>
-              <tr><th>Step</th><th class="num">XP</th><th>Why it counts</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Applied</td><td class="num">10</td><td class="note">You sent it. That is the hard part.</td></tr>
-              <tr><td>Tailored</td><td class="num">5</td><td class="note">You changed your materials for this role.</td></tr>
-              <tr><td>Followed up</td><td class="num">5</td><td class="note">You reached out again.</td></tr>
-              <tr><td>Interview</td><td class="num">25</td><td class="note">A real conversation happened.</td></tr>
-              <tr><td>Offer</td><td class="num">100</td><td class="note">Worth celebrating.</td></tr>
-              <tr><td>Rejected</td><td class="num">0</td><td class="note">Logged, not penalized. It still shows you kept going.</td></tr>
-            </tbody>
-          </table>
-        </div>
+      <section class="hero" aria-label="Progress">
+        <article class="card level-card reveal" style="--i: 1">
+          <div class="ring" aria-hidden="true">
+            <svg viewBox="0 0 120 120">
+              <circle class="ring-track" cx="60" cy="60" r="50" />
+              <circle id="ring-fill" class="ring-fill" cx="60" cy="60" r="50" />
+            </svg>
+            <div class="ring-core">
+              <span class="ring-label">Level</span>
+              <strong id="level">1</strong>
+            </div>
+          </div>
+          <div class="level-meta">
+            <p class="big"><span id="xp">0</span><small>XP</small></p>
+            <p id="next-text" class="muted"></p>
+          </div>
+        </article>
+
+        <article class="card week-card reveal" style="--i: 2">
+          <div class="card-head">
+            <h2>This week</h2>
+            <label class="goal-set">
+              Goal
+              <input id="goal-input" type="number" min="1" max="50" inputmode="numeric" />
+            </label>
+          </div>
+          <div id="goal-meter" class="meter" role="img" aria-label="Weekly goal progress"></div>
+          <p id="goal-text" class="muted"></p>
+          <p id="goal-banner" class="goal-banner" hidden>Goal reached. Nice work.</p>
+        </article>
+
+        <article class="card reveal" style="--i: 3">
+          <dl class="stats">
+            <div>
+              <dt>Applications</dt>
+              <dd id="stat-apps">0</dd>
+            </div>
+            <div>
+              <dt>Interviews</dt>
+              <dd id="stat-interviews">0</dd>
+            </div>
+            <div>
+              <dt>Steps this week</dt>
+              <dd id="stat-week">0</dd>
+            </div>
+          </dl>
+        </article>
       </section>
 
-      <section aria-labelledby="rules-title">
-        <h2 id="rules-title">How it stays kind</h2>
-        <div class="card">
-          <p>
-            Levels rise every 100 XP. The weekly goal fills one segment per effort step, counted
-            from Monday.
-          </p>
-          <p>
-            There are no streaks, so a missed day takes nothing away. Quiet weeks are fine. The goal
-            starts over each week, and the log keeps every step you took.
-          </p>
-        </div>
+      <div class="layout">
+        <section class="card reveal" style="--i: 4" aria-labelledby="add-title">
+          <h2 id="add-title">Log an application</h2>
+          <form id="add-form" class="add-form">
+            <label>
+              Company
+              <input name="company" autocomplete="organization" required />
+            </label>
+            <label>
+              Role
+              <input name="role" autocomplete="off" required />
+            </label>
+            <label class="span-2">
+              Link <span class="optional">optional</span>
+              <input name="link" type="url" inputmode="url" placeholder="https://" />
+            </label>
+            <label class="span-2">
+              Notes <span class="optional">optional</span>
+              <textarea name="notes" rows="2"></textarea>
+            </label>
+            <div class="form-foot span-2">
+              <p id="form-error" class="error" role="alert"></p>
+              <button type="submit">Add application</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="card reveal" style="--i: 5" aria-labelledby="apps-title">
+          <div class="card-head">
+            <h2 id="apps-title">Applications</h2>
+            <span id="apps-count" class="pill">0</span>
+          </div>
+          <ul id="app-list" class="apps"></ul>
+          <div id="empty" class="empty">
+            <p class="empty-title">Your log is empty.</p>
+            <p class="muted">Add your first application. Every step you take after it earns XP.</p>
+          </div>
+        </section>
+      </div>
+
+      <section class="card reveal" style="--i: 6" aria-labelledby="rules-title">
+        <h2 id="rules-title">How XP works</h2>
+        <ul class="xp-grid">
+          <li><span>Applied</span><b>10</b></li>
+          <li><span>Tailored</span><b>5</b></li>
+          <li><span>Followed up</span><b>5</b></li>
+          <li><span>Interview</span><b>25</b></li>
+          <li><span>Offer</span><b>100</b></li>
+          <li><span>Rejected</span><b>0</b></li>
+        </ul>
+        <p class="muted">
+          Rejections cost nothing. Levels rise every 100 XP. There are no streaks, so a missed day
+          takes nothing away. The goal starts over each week, and the log keeps every step you took.
+        </p>
       </section>
 
-      <section aria-labelledby="privacy-title">
+      <section class="card reveal" style="--i: 7" aria-labelledby="privacy-title">
         <h2 id="privacy-title">Private by default</h2>
-        <div class="card">
-          <p>
-            The tracker runs in your browser and keeps your data there. Nothing is uploaded and no
-            account is needed. Export a JSON backup whenever you like.
-          </p>
-        </div>
+        <p class="muted">
+          Your data stays in this browser. Nothing is uploaded and no account is needed. Export a
+          JSON backup whenever you like, and keep exports out of any public repo.
+        </p>
       </section>
 
-      <footer>
+      <footer class="reveal" style="--i: 8">
         The code is public. <a href="https://github.com/suavi-yildirim/grindlog">View it on GitHub</a>.
       </footer>
-    </main>
+    </div>
+
+    <div id="toasts" class="toasts" aria-live="polite"></div>
+    <script type="module" src="app.js"></script>
   </body>
 </html>
